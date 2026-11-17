@@ -1,0 +1,14 @@
+check,status,observed,expected,notes
+order_fact_one_row_per_order,PASS,"rows=99441, unique=99441","rows=99441, unique=99441",Overall KPI source must remain one row per order.
+category_fact_grain_unique,PASS,0,0,One row per order-category exposure.
+seller_fact_grain_unique,PASS,0,0,One row per order-seller exposure.
+date_dimension_unique,PASS,0,0,One row per calendar date.
+all_order_purchase_dates_in_date_dimension,PASS,99441,99441,All non-null order purchase dates map to the date dimension.
+order_fact_item_price_reconciles,PASS,source=13591643.700000; output=13591643.700000; diff=0.0000000000,difference within 1e-6,Summing within a segment fact should reconcile to item-line price totals.
+order_fact_freight_reconciles,PASS,source=2251909.540000; output=2251909.540000; diff=0.0000000000,difference within 1e-6,Summing within a segment fact should reconcile to item-line freight totals.
+category_fact_item_price_reconciles,PASS,source=13591643.700000; output=13591643.700000; diff=0.0000000019,difference within 1e-6,Summing within a segment fact should reconcile to item-line price totals.
+category_fact_freight_reconciles,PASS,source=2251909.540000; output=2251909.540000; diff=0.0000000000,difference within 1e-6,Summing within a segment fact should reconcile to item-line freight totals.
+seller_fact_item_price_reconciles,PASS,source=13591643.700000; output=13591643.700000; diff=0.0000000019,difference within 1e-6,Summing within a segment fact should reconcile to item-line price totals.
+seller_fact_freight_reconciles,PASS,source=2251909.540000; output=2251909.540000; diff=0.0000000000,difference within 1e-6,Summing within a segment fact should reconcile to item-line freight totals.
+late_orders_subset_of_eligible,PASS,eligible=96470; late=6534,late <= eligible,Late delivery numerator must be a subset of its eligible denominator.
+late_flag_not_set_for_ineligible_orders,PASS,0,0,Do not classify an order as late when its delivery metrics are ineligible.

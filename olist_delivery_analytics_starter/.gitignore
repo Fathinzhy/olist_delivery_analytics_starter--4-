@@ -1,0 +1,23 @@
+# Virtual environment
+.venv/
+venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Raw and processed data
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Generated reports can be kept locally; commit only selected, small outputs intentionally.
+outputs/data_quality/*.csv
+outputs/charts/*
+!outputs/data_quality/.gitkeep
+!outputs/charts/.gitkeep
+
+# Local/editor artifacts
+.DS_Store
+Thumbs.db
+# Generated analytical-model outputs (keep curated reports/documentation separately)
+outputs/analytical_model/*.csv

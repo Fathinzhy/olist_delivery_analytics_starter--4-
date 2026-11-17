@@ -1,0 +1,217 @@
+// Olist Power BI measures
+// Table names correspond to Notebook 04 exports.
+// Import as measures manually in Power BI; DAX files are text references, not an auto-import package.
+
+// ===== ORDER-LEVEL KPIs =====
+Orders Placed =
+DISTINCTCOUNT ( fact_order_dashboard[order_id] )
+
+Eligible Delivered Orders =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    fact_order_dashboard[delivery_metric_eligible] = TRUE ()
+)
+
+Late Orders =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    fact_order_dashboard[delivery_metric_eligible] = TRUE (),
+    fact_order_dashboard[is_late_delivery] = TRUE ()
+)
+
+On-time or Early Orders =
+[Eligible Delivered Orders] - [Late Orders]
+
+Late Delivery Rate =
+DIVIDE ( [Late Orders], [Eligible Delivered Orders] )
+
+On-time or Early Rate =
+DIVIDE ( [On-time or Early Orders], [Eligible Delivered Orders] )
+
+Reviewed Orders =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    NOT ISBLANK ( fact_order_dashboard[average_review_score] )
+)
+
+Mean Order Review Score =
+AVERAGE ( fact_order_dashboard[average_review_score] )
+
+Low-rated Reviewed Orders =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    NOT ISBLANK ( fact_order_dashboard[average_review_score] ),
+    fact_order_dashboard[is_low_rated_order] = TRUE ()
+)
+
+Low-Rating Share =
+DIVIDE ( [Low-rated Reviewed Orders], [Reviewed Orders] )
+
+Late Orders With Reviews =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    fact_order_dashboard[delivery_metric_eligible] = TRUE (),
+    fact_order_dashboard[is_late_delivery] = TRUE (),
+    NOT ISBLANK ( fact_order_dashboard[average_review_score] )
+)
+
+Late Orders With Low Ratings =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    fact_order_dashboard[delivery_metric_eligible] = TRUE (),
+    fact_order_dashboard[is_late_delivery] = TRUE (),
+    fact_order_dashboard[is_low_rated_order] = TRUE ()
+)
+
+Late-Order Low-Rating Share =
+DIVIDE ( [Late Orders With Low Ratings], [Late Orders With Reviews] )
+
+On-time/Early Orders With Reviews =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    fact_order_dashboard[delivery_metric_eligible] = TRUE (),
+    fact_order_dashboard[is_late_delivery] = FALSE (),
+    NOT ISBLANK ( fact_order_dashboard[average_review_score] )
+)
+
+On-time/Early Orders With Low Ratings =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    fact_order_dashboard[delivery_metric_eligible] = TRUE (),
+    fact_order_dashboard[is_late_delivery] = FALSE (),
+    fact_order_dashboard[is_low_rated_order] = TRUE ()
+)
+
+On-time/Early Low-Rating Share =
+DIVIDE ( [On-time/Early Orders With Low Ratings], [On-time/Early Orders With Reviews] )
+
+// Item price is a merchandise-value proxy, not profit. Shipping is kept separate.
+Item GMV =
+SUM ( fact_order_dashboard[item_price_total] )
+
+Freight Value =
+SUM ( fact_order_dashboard[freight_value_total] )
+
+Orders With Item Value =
+CALCULATE (
+    DISTINCTCOUNT ( fact_order_dashboard[order_id] ),
+    NOT ISBLANK ( fact_order_dashboard[item_price_total] )
+)
+
+Average Item Value Per Order =
+DIVIDE ( [Item GMV], [Orders With Item Value] )
+
+Median Delay Days Among Late Orders =
+MEDIANX (
+    FILTER (
+        fact_order_dashboard,
+        fact_order_dashboard[delivery_metric_eligible] = TRUE ()
+            && fact_order_dashboard[is_late_delivery] = TRUE ()
+            && NOT ISBLANK ( fact_order_dashboard[delivery_delay_days] )
+    ),
+    fact_order_dashboard[delivery_delay_days]
+)
+
+// ===== CATEGORY EXPOSURE KPIs =====
+Category Eligible Order Exposures =
+CALCULATE (
+    COUNTROWS ( fact_order_category_dashboard ),
+    fact_order_category_dashboard[delivery_metric_eligible] = TRUE ()
+)
+
+Category Late Order Exposures =
+CALCULATE (
+    COUNTROWS ( fact_order_category_dashboard ),
+    fact_order_category_dashboard[delivery_metric_eligible] = TRUE (),
+    fact_order_category_dashboard[is_late_delivery] = TRUE ()
+)
+
+Category Late Delivery Rate =
+DIVIDE ( [Category Late Order Exposures], [Category Eligible Order Exposures] )
+
+Category Reviewed Exposures =
+CALCULATE (
+    COUNTROWS ( fact_order_category_dashboard ),
+    NOT ISBLANK ( fact_order_category_dashboard[average_review_score] )
+)
+
+Category Low-rated Exposures =
+CALCULATE (
+    COUNTROWS ( fact_order_category_dashboard ),
+    NOT ISBLANK ( fact_order_category_dashboard[average_review_score] ),
+    fact_order_category_dashboard[is_low_rated_order] = TRUE ()
+)
+
+Category Low-Rating Share =
+DIVIDE ( [Category Low-rated Exposures], [Category Reviewed Exposures] )
+
+Overall Late Rate Baseline =
+CALCULATE ( [Late Delivery Rate], REMOVEFILTERS ( dim_category ), REMOVEFILTERS ( dim_seller ) )
+
+Category Late Rate Gap vs Baseline (pp) =
+100 * ( [Category Late Delivery Rate] - [Overall Late Rate Baseline] )
+
+// For category comparisons, this preserves the selected date and customer-state filters.
+Category Excess Late Exposures vs Baseline =
+[Category Late Order Exposures] - ( [Category Eligible Order Exposures] * [Overall Late Rate Baseline] )
+
+// ===== STATE PRIORITIZATION =====
+// This baseline removes the state, category and seller filters but keeps the date filter.
+All-State Late Rate Baseline =
+CALCULATE (
+    [Late Delivery Rate],
+    REMOVEFILTERS ( dim_state ),
+    REMOVEFILTERS ( dim_category ),
+    REMOVEFILTERS ( dim_seller )
+)
+
+State Late Rate Gap vs All-State Baseline (pp) =
+100 * ( [Late Delivery Rate] - [All-State Late Rate Baseline] )
+
+Excess Late Orders vs All-State Baseline =
+[Late Orders] - ( [Eligible Delivered Orders] * [All-State Late Rate Baseline] )
+
+Category Item GMV =
+SUM ( fact_order_category_dashboard[item_price_total] )
+
+// ===== SELLER EXPOSURE KPIs =====
+Seller Eligible Order Exposures =
+CALCULATE (
+    COUNTROWS ( fact_order_seller_dashboard ),
+    fact_order_seller_dashboard[delivery_metric_eligible] = TRUE ()
+)
+
+Seller Late Order Exposures =
+CALCULATE (
+    COUNTROWS ( fact_order_seller_dashboard ),
+    fact_order_seller_dashboard[delivery_metric_eligible] = TRUE (),
+    fact_order_seller_dashboard[is_late_delivery] = TRUE ()
+)
+
+Seller Late Delivery Rate =
+DIVIDE ( [Seller Late Order Exposures], [Seller Eligible Order Exposures] )
+
+Seller Reviewed Exposures =
+CALCULATE (
+    COUNTROWS ( fact_order_seller_dashboard ),
+    NOT ISBLANK ( fact_order_seller_dashboard[average_review_score] )
+)
+
+Seller Low-rated Exposures =
+CALCULATE (
+    COUNTROWS ( fact_order_seller_dashboard ),
+    NOT ISBLANK ( fact_order_seller_dashboard[average_review_score] ),
+    fact_order_seller_dashboard[is_low_rated_order] = TRUE ()
+)
+
+Seller Low-Rating Share =
+DIVIDE ( [Seller Low-rated Exposures], [Seller Reviewed Exposures] )
+
+Seller Late Rate Gap vs Baseline (pp) =
+100 * ( [Seller Late Delivery Rate] - [Overall Late Rate Baseline] )
+
+Seller Excess Late Exposures vs Baseline =
+[Seller Late Order Exposures] - ( [Seller Eligible Order Exposures] * [Overall Late Rate Baseline] )
+
+Seller Item GMV =
+SUM ( fact_order_seller_dashboard[item_price_total] )

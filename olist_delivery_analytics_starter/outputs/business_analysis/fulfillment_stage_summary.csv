@@ -1,0 +1,4 @@
+fulfillment_stage,source_column,valid_interval_count,coverage_of_eligible_delivered_orders,median_hours,p90_hours,interpretation
+Purchase to approval,purchase_to_approval_hours,96456,0.9998548771638851,0.343333,34.594722000000004,Only valid non-negative intervals are summarized; coverage should be checked before comparing stages.
+Approval to carrier handoff,approval_to_carrier_hours,95105,0.9858505234788018,44.377222,144.553333,Only valid non-negative intervals are summarized; coverage should be checked before comparing stages.
+Carrier handoff to customer delivery,carrier_to_delivery_hours,96446,0.9997512179952317,170.4075,453.6341665,Only valid non-negative intervals are summarized; coverage should be checked before comparing stages.

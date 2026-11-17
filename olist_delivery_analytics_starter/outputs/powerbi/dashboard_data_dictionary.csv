@@ -1,0 +1,8 @@
+table,grain,use,key,caution
+fact_order_dashboard,One row per order_id,"Overall KPIs, monthly trends, state analysis",order_id,Use for distinct order counts and order-level rates.
+fact_order_category_dashboard,One row per order_id + product_category_label,Category investigation,order_id + product_category_label,Counts are order-category exposures; an order can appear in multiple categories.
+fact_order_seller_dashboard,One row per order_id + seller_id,Seller investigation,order_id + seller_id,Counts are order-seller exposures; an order can appear under multiple sellers.
+dim_date,One row per calendar date,Date slicing and month ordering,date,Sort year_month by year_month_sort; filter default trend to include_in_default_trend = true.
+dim_state,One row per customer state,Consistent customer-state slicer,customer_state,"This is the customer destination state, not seller state."
+dim_category,One row per category label,Category slicer and category chart axis,product_category_label,Unknown/missing category is retained as a category.
+dim_seller,One row per seller_id represented in the item data,Seller investigation,seller_id,Seller results are exposure-based and should use minimum-volume thresholds.

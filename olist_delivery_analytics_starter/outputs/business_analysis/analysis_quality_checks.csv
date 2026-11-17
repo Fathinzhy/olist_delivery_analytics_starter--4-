@@ -1,0 +1,7 @@
+check,observed,expected,status
+order_model_one_row_per_order,99441,99441,PASS
+order_item_key_unique,0,0,PASS
+eligible_orders_have_late_flag,96470,96470,PASS
+late_plus_on_time_equals_eligible,96470,96470,PASS
+late_rate_between_0_and_1,0.06773090079817559,0 <= rate <= 1,PASS
+review_score_range,"min=1.0, max=5.0",within 1 to 5 when present,PASS
